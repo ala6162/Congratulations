@@ -1,0 +1,11 @@
+FIRST: 
+Give me a clean and modern React.js component that displays a button centered on the page. When the user clicks the button, it should show my Facebook link along with a nice 'Congratulations' confetti effect. Use functional components, Tailwind CSS (if available), and keep the code simple and production-ready.
+
+
+SECOND
+"Give me a clean, modern, and romantic React.js web app. The page should feel mysterious and playful for a fiancée who is trying to discover her partner’s Facebook profile. Center a button on the page with a soft, elegant animation.
+
+Each time she clicks the button, reveal a new romantic clue (one by one). After 3–4 clues, reveal the final surprise: a link to his Facebook profile along with a beautiful ‘Congratulations’ confetti animation.
+
+Use functional React components, Tailwind CSS (if possible), and smooth animations (like Framer Motion). Keep the design minimal, elegant, and emotional — something a fiancée would love.
+

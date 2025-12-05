@@ -1,0 +1,5 @@
+{
+  "name": "Confetti Link Reveal",
+  "description": "A simple and engaging React component that reveals a Facebook profile link with a festive confetti animation upon clicking a button.",
+  "requestFramePermissions": []
+}
