@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Facebook, Heart, Stars, ArrowRight, Gift, Lock } from 'lucide-react';
+import { Facebook, Heart, Stars, ArrowRight, Gift, Lock, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// The steps of our romantic journey
+// The steps of our romantic journey (omitted for brevity, remains the same)
 const STEPS = [
   {
     id: 'intro',
@@ -35,17 +35,117 @@ const STEPS = [
   }
 ];
 
+// --- Unlocking Form Component (UPDATED) ---
+// This component handles the name check before the main loop starts
+const UnlockingForm = ({ onUnlock }) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Define the multiple correct name/password pairs
+  const CORRECT_PAIRS = [
+    { first: 'ala', last: 'belkhiri' },
+    { first: 'alaa', last: 'belkhiri' },
+    { first: 'ala eddine', last: 'belkhiri' },
+    { first: 'ala eddin', last: 'belkhiri' },
+    { first: 'ala edin', last: 'belkhiri' },
+    { first: 'ala edine', last: 'belkhiri' },
+    { first: 'ala eddin', last: 'belkhiri' },
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Normalize input to lowercase for case-insensitive check
+    const inputFirstName = firstName.trim().toLowerCase();
+    const inputLastName = lastName.trim().toLowerCase();
+    
+    // Check if the input matches any of the correct pairs
+    const isMatch = CORRECT_PAIRS.some(pair => 
+      pair.first === inputFirstName && pair.last === inputLastName
+    );
+
+    if (isMatch) {
+      setErrorMessage('');
+      onUnlock(); // Call the function to start the loop
+    } else {
+      setErrorMessage(
+"Oops! That key didn't fit the lock. Try checking the spelling or remembering the name of the person who share this connection. Give it another shot!" 
+  );
+      setFirstName('');
+      setLastName('');
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="w-full max-w-sm md:max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 text-center border border-rose-100"
+    >
+      <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
+        <Lock className="w-7 h-7" />
+      </div>
+      
+      <h2 className="text-2xl md:text-3xl font-serif font-semibold text-slate-800 mb-3 tracking-tight">
+        Secret Code Required
+      </h2>
+      <p className="text-slate-600 mb-6 text-sm md:text-base leading-relaxed">
+      To start our journey, please enter the name of the person who share this special bond.
+      </p>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="First Name (Key)"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className="w-full px-4 py-3 border border-rose-300 rounded-xl focus:ring-rose-400 focus:border-rose-400 transition-all outline-none"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Last Name (Password)"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className="w-full px-4 py-3 border border-rose-300 rounded-xl focus:ring-rose-400 focus:border-rose-400 transition-all outline-none"
+          required
+        />
+
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-xs flex items-start gap-2"
+          >
+            <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <p className="text-left font-medium">{errorMessage}</p>
+          </motion.div>
+        )}
+
+        <button
+          type="submit"
+          className="w-full bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-5 rounded-2xl transition-all duration-300 shadow-lg shadow-rose-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 mt-4"
+        >
+          Unlock the Journey
+        </button>
+      </form>
+    </motion.div>
+  );
+};
+
+// --- Main Celebration Component (REST OF THE CODE) ---
 export const Celebration: React.FC = () => {
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Trigger confetti when we hit the final state
+  // Trigger confetti when we hit the final state (useEffect remains the same)
   useEffect(() => {
     if (isFinished) {
       const duration = 3000;
       const end = Date.now() + duration;
 
-      // Heart shaped confetti if possible, otherwise standard colors
       const colors = ['#e11d48', '#ec4899', '#f43f5e', '#fb7185'];
 
       (function frame() {
@@ -84,16 +184,30 @@ export const Celebration: React.FC = () => {
   const handleReset = () => {
     setIsFinished(false);
     setCurrentStep(0);
+    setIsUnlocked(false);
+  };
+  
+  const handleUnlock = () => {
+    setIsUnlocked(true);
   };
 
   // Common wrapper to ensure centering and responsiveness
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="w-full flex justify-center px-4 py-8">
-       {children}
+    <div className="w-full flex justify-center px-4 py-8 min-h-screen items-center">
+      {children}
     </div>
   );
+  
+  // --- Check if unlocked first ---
+  if (!isUnlocked) {
+    return (
+      <Wrapper>
+        <UnlockingForm onUnlock={handleUnlock} />
+      </Wrapper>
+    );
+  }
 
-  // Render the final card
+  // Render the final card (remains the same)
   if (isFinished) {
     return (
       <Wrapper>
@@ -139,7 +253,7 @@ export const Celebration: React.FC = () => {
     );
   }
 
-  // Render the progress cards
+  // Render the progress cards (remains the same)
   const stepData = STEPS[currentStep];
 
   return (
