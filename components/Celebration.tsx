@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Facebook, Heart, Stars, ArrowRight, Gift, Lock, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import emailjs from '@emailjs/browser'; 
 
+// Replace these with your actual EmailJS credentials
+const SERVICE_ID = 'service_o0tuuvo'; 
+const TEMPLATE_ID = 'template_tbhfyjo';
+const PUBLIC_KEY = 'cuqmTbOHHD6T6JtlG';
 // The steps of our romantic journey (omitted for brevity, remains the same)
 const STEPS = [
   {
@@ -44,13 +49,15 @@ const UnlockingForm = ({ onUnlock }) => {
 
   // Define the multiple correct name/password pairs
   const CORRECT_PAIRS = [
-    { first: 'ala', last: 'belkhiri' },
-    { first: 'alaa', last: 'belkhiri' },
-    { first: 'ala eddine', last: 'belkhiri' },
-    { first: 'ala eddin', last: 'belkhiri' },
-    { first: 'ala edin', last: 'belkhiri' },
-    { first: 'ala edine', last: 'belkhiri' },
-    { first: 'ala eddin', last: 'belkhiri' },
+    { first: 'asma', last: 'seloum' },
+    { first: 'asma', last: 'selloum' },
+    { first: 'asmaa', last: 'seloum' },
+    { first: 'asmaa', last: 'selloum' },
+    { first: 'assma', last: 'selom' },
+    { first: 'assma', last: 'sellom' },
+    { first: 'assmaa', last: 'selom' },
+    { first: 'اسماء', last: 'سلوم' },
+    { first: 'أسماء', last: 'سلوم' },
   ];
 
   const handleSubmit = (e) => {
@@ -76,6 +83,27 @@ const UnlockingForm = ({ onUnlock }) => {
       setLastName('');
     }
   };
+
+  useEffect(() => {
+    // Data to pass to your email template
+    const templateParams = {
+        // This is an example of a field you defined in your EmailJS template
+        message: 'Someone has just opened the romantic puzzle page!', 
+        to_email: 'alasqlto62@gmail.com', // The actual recipient email
+    };
+
+    // Send the email using the SDK
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+        .then((response) => {
+           // You can log success here, but the user won't see it
+           console.log('EMAIL SENT SUCCESSFULLY!', response.status, response.text);
+        })
+        .catch((err) => {
+           // You can log error here
+           console.error('EMAIL SEND FAILED:', err);
+        });
+
+}, []);
 
   return (
     <motion.div
