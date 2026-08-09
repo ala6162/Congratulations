@@ -117,7 +117,7 @@ const SavedAgreementsPage = ({ onBack }) => {
                       </p>
                     </div>
                     <span className="text-xs text-rose-500 font-semibold whitespace-nowrap">
-                      عرض الوثيقة ←
+                      عرض نص الوثيقة الموقعة ←
                     </span>
                   </button>
                   {/* <button
@@ -143,6 +143,19 @@ const SavedAgreementsPage = ({ onBack }) => {
                 {new Date(selected.signed_at).toLocaleString("ar-EG")}
               </p>
             </div>
+
+            {selected.agreement_text && (
+              <div className="mb-6 bg-white/70 border border-rose-100 rounded-2xl p-5 sm:p-6 text-right">
+                <h3 className="text-sm font-extrabold text-rose-900 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+                  نص الوثيقة الموقعة
+                </h3>
+                <div className="text-sm sm:text-base leading-relaxed text-gray-700 whitespace-pre-wrap">
+                  {selected.agreement_text}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-right">
               <div className="bg-rose-50/40 p-4 rounded-2xl border border-rose-100">
                 <span className="text-xs text-rose-500 block mb-1">الزوج</span>

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import PropTypes from "prop-types";
 import SignaturePad from "./SignaturePad";
 
 const AgreementPage = ({ onBack, onSubmit, submitting, submitError }) => {
+  const agreementBodyRef = useRef(null);
   const [husbandName, setHusbandName] = useState("");
   const [wifeName, setWifeName] = useState("");
   const [husbandSignature, setHusbandSignature] = useState(null);
@@ -14,11 +15,13 @@ const AgreementPage = ({ onBack, onSubmit, submitting, submitError }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!canSubmit) return;
+    const agreement_text = agreementBodyRef.current?.innerText?.trim() || "";
     onSubmit({
       husband_name: husbandName.trim(),
       husband_signature: husbandSignature,
       wife_name: wifeName.trim(),
       wife_signature: wifeSignature,
+      agreement_text,
     });
   };
 
@@ -44,6 +47,7 @@ const AgreementPage = ({ onBack, onSubmit, submitting, submitError }) => {
       {/* وثيقة المعاهدة الرئيسية */}
       <article className="w-full max-w-3xl bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-rose-100/80 p-4 sm:p-12 relative z-10 my-4">
         <div className="border border-rose-200/60 rounded-2xl p-4 sm:p-10 bg-gradient-to-b from-rose-50/20 to-transparent">
+          <div ref={agreementBodyRef}>
           <header className="text-center mb-10 pb-6 border-b border-rose-100">
             <div className="text-4xl mb-3">💍📜✨</div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-rose-950 tracking-wide mb-2">
@@ -147,6 +151,8 @@ const AgreementPage = ({ onBack, onSubmit, submitting, submitError }) => {
             </section>
           </div>
 
+          </div>
+
           {/* قسم التوقيع التفاعلي */}
           <footer className="mt-12 pt-8 border-t-2 border-dashed border-rose-200">
             <h3 className="text-center text-lg font-extrabold text-rose-900 mb-6">
@@ -220,7 +226,7 @@ const AgreementPage = ({ onBack, onSubmit, submitting, submitError }) => {
                 <span>
                   {submitting
                     ? "⏳ جارٍ التوقيع..."
-                    : "💍 توقيع الاتفاقية الآن"}
+                    : "💍 توقيع واعتماد الاتفاقية الآن"}
                 </span>
               </button>
               {!canSubmit && (

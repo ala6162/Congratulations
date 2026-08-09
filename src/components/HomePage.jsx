@@ -56,7 +56,9 @@ const HomePage = ({ onOpenAgreement, onViewSaved }) => {
           >
             <span className="relative w-full px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-center gap-3">
               <span className="text-xl shrink-0">📜</span>
-              <span className="leading-snug text-center">الاتفاقيات الموقعة</span>
+              <span className="leading-snug text-center">
+              عرض الأرشيف والاتفاقيات الموقعة
+            </span>
             </span>
           </button>
 
