@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { fetchAgreements, fetchAgreement, deleteAgreement } from "../api";
+import {
+  fetchAgreements,
+  fetchAgreement,
+  updateAgreement,
+  deleteAgreement,
+} from "../api";
+import SignaturePad from "./SignaturePad";
 
 const SavedAgreementsPage = ({ onBack }) => {
   const [agreements, setAgreements] = useState([]);
@@ -10,6 +16,13 @@ const SavedAgreementsPage = ({ onBack }) => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [notice, setNotice] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [husbandName, setHusbandName] = useState("");
+  const [wifeName, setWifeName] = useState("");
+  const [husbandSignature, setHusbandSignature] = useState(null);
+  const [wifeSignature, setWifeSignature] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [editNotice, setEditNotice] = useState(null);
 
   useEffect(() => {
     fetchAgreements()
@@ -20,10 +33,74 @@ const SavedAgreementsPage = ({ onBack }) => {
 
   const openDetail = async (id) => {
     setSelected(null);
+    setEditing(false);
+    setEditNotice(null);
     try {
-      setSelected(await fetchAgreement(id));
+      const detail = await fetchAgreement(id);
+      setSelected(detail);
+      setHusbandName(detail.husband_name);
+      setWifeName(detail.wife_name);
+      setHusbandSignature(detail.husband_signature);
+      setWifeSignature(detail.wife_signature);
     } catch (e) {
       setError(e.message);
+    }
+  };
+
+  const startEdit = () => {
+    setHusbandName(selected.husband_name);
+    setWifeName(selected.wife_name);
+    setHusbandSignature(selected.husband_signature);
+    setWifeSignature(selected.wife_signature);
+    setEditNotice(null);
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setHusbandName(selected.husband_name);
+    setWifeName(selected.wife_name);
+    setHusbandSignature(selected.husband_signature);
+    setWifeSignature(selected.wife_signature);
+    setEditNotice(null);
+    setEditing(false);
+  };
+
+  const saveEdit = async () => {
+    if (!selected) return;
+    setSaving(true);
+    setEditNotice(null);
+    try {
+      const payload = {
+        husband_name: husbandName.trim(),
+        husband_signature: husbandSignature || selected.husband_signature,
+        wife_name: wifeName.trim(),
+        wife_signature: wifeSignature || selected.wife_signature,
+        agreement_text: selected.agreement_text,
+      };
+      await updateAgreement(selected.id, payload);
+      const refreshed = await fetchAgreement(selected.id);
+      setSelected(refreshed);
+      setAgreements((prev) =>
+        prev.map((a) =>
+          a.id === refreshed.id
+            ? {
+                id: refreshed.id,
+                husband_name: refreshed.husband_name,
+                wife_name: refreshed.wife_name,
+                signed_at: refreshed.signed_at,
+              }
+            : a,
+        ),
+      );
+      setEditing(false);
+      setEditNotice({
+        type: "success",
+        message: "تم تحديث الاتفاقية بنجاح ✅",
+      });
+    } catch (e) {
+      setEditNotice({ type: "error", message: e.message });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -126,7 +203,7 @@ const SavedAgreementsPage = ({ onBack }) => {
                     className="shrink-0 self-center grid place-items-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 hover:text-red-600 transition-all active:scale-95"
                   >
                     🗑
-                  </button> */}
+                  </button>*/}
                 </li>
               ))}
             </ul>
@@ -156,33 +233,126 @@ const SavedAgreementsPage = ({ onBack }) => {
               </div>
             )}
 
+            {editNotice && (
+              <div
+                className={
+                  editNotice.type === "success"
+                    ? "mb-4 text-center text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm"
+                    : "mb-4 text-center text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm"
+                }
+              >
+                {editNotice.message}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-right">
               <div className="bg-rose-50/40 p-4 rounded-2xl border border-rose-100">
                 <span className="text-xs text-rose-500 block mb-1">الزوج</span>
-                <span className="font-bold text-rose-950">
-                  {selected.husband_name}
-                </span>
-                <img
-                  src={selected.husband_signature}
-                  alt="توقيع الزوج"
-                  className="mt-3 w-full h-24 object-contain bg-white rounded-xl border border-rose-100"
-                />
+                {editing ? (
+                  <div className="space-y-4">
+                    <label className="block">
+                      <span className="text-xs text-rose-600 block mb-1">
+                        الاسم الكامل
+                      </span>
+                      <input
+                        type="text"
+                        value={husbandName}
+                        onChange={(e) => setHusbandName(e.target.value)}
+                        placeholder="اسم الزوج"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-rose-200 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
+                      />
+                    </label>
+                    <SignaturePad
+                      key={`husband-${selected.id}`}
+                      label="التوقيع"
+                      onChange={setHusbandSignature}
+                      placeholder="وقع هنا كزوج"
+                      initialData={selected.husband_signature}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-bold text-rose-950">
+                      {selected.husband_name}
+                    </span>
+                    <img
+                      src={selected.husband_signature}
+                      alt="توقيع الزوج"
+                      className="mt-3 w-full h-24 object-contain bg-white rounded-xl border border-rose-100"
+                    />
+                  </>
+                )}
               </div>
               <div className="bg-rose-50/40 p-4 rounded-2xl border border-rose-100">
                 <span className="text-xs text-rose-500 block mb-1">الزوجة</span>
-                <span className="font-bold text-rose-950">
-                  {selected.wife_name}
-                </span>
-                <img
-                  src={selected.wife_signature}
-                  alt="توقيع الزوجة"
-                  className="mt-3 w-full h-24 object-contain bg-white rounded-xl border border-rose-100"
-                />
+                {editing ? (
+                  <div className="space-y-4">
+                    <label className="block">
+                      <span className="text-xs text-rose-600 block mb-1">
+                        الاسم الكامل
+                      </span>
+                      <input
+                        type="text"
+                        value={wifeName}
+                        onChange={(e) => setWifeName(e.target.value)}
+                        placeholder="اسم الزوجة"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-rose-200 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-200 text-sm"
+                      />
+                    </label>
+                    <SignaturePad
+                      key={`wife-${selected.id}`}
+                      label="التوقيع"
+                      onChange={setWifeSignature}
+                      placeholder="وقّعي هنا كزوجة"
+                      initialData={selected.wife_signature}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-bold text-rose-950">
+                      {selected.wife_name}
+                    </span>
+                    <img
+                      src={selected.wife_signature}
+                      alt="توقيع الزوجة"
+                      className="mt-3 w-full h-24 object-contain bg-white rounded-xl border border-rose-100"
+                    />
+                  </>
+                )}
               </div>
             </div>
+
+            {editing ? (
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={cancelEdit}
+                  disabled={saving}
+                  className="flex-1 px-6 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-sm hover:bg-rose-100 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  إلغاء التعديل
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={saving || !husbandName.trim() || !wifeName.trim()}
+                  className="flex-1 px-6 py-3 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-red-500 text-white font-bold text-sm shadow-lg hover:shadow-rose-300/50 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {saving ? "⏳ جارٍ الحفظ..." : "💾 حفظ التعديلات"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={startEdit}
+                className="mt-6 w-full px-6 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-sm hover:bg-rose-100 transition-all active:scale-95"
+              >
+                ✏️ تعديل الاسم والتوقيع
+              </button>
+            )}
             <button
-              onClick={() => setSelected(null)}
-              className="mt-6 w-full px-6 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-sm hover:bg-rose-100 transition-all active:scale-95"
+              onClick={() => {
+                setEditing(false);
+                setSelected(null);
+              }}
+              className="mt-3 w-full px-6 py-3 rounded-2xl bg-white border border-rose-100 text-rose-500 font-bold text-sm hover:bg-rose-50 transition-all active:scale-95"
             >
               ← العودة للقائمة
             </button>
