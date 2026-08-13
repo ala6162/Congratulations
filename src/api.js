@@ -22,6 +22,12 @@ export const createAgreement = (payload) =>
     body: JSON.stringify(payload),
   });
 
+export const updateAgreement = (id, payload) =>
+  request(`/api/agreements/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
 export const deleteAgreement = (id) =>
   request(`/api/agreements/${id}`, {
     method: 'DELETE',

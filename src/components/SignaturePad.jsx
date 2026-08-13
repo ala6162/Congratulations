@@ -4,9 +4,10 @@ import SignatureCanvas from 'react-signature-canvas';
 
 const CANVAS_HEIGHT = 200;
 
-const SignaturePad = ({ label, onChange, placeholder }) => {
+const SignaturePad = ({ label, onChange, placeholder, initialData }) => {
   const canvasRef = useRef(null);
   const wrapperRef = useRef(null);
+  const loadedRef = useRef(false);
   const [width, setWidth] = useState(0);
   const [isEmpty, setIsEmpty] = useState(true);
 
@@ -24,6 +25,14 @@ const SignaturePad = ({ label, onChange, placeholder }) => {
     const canvas = canvasRef.current?.getCanvas?.();
     if (canvas) canvas.style.width = '100%';
   }, [width]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !width || !initialData || loadedRef.current) return;
+    loadedRef.current = true;
+    canvas.fromDataURL(initialData);
+    setIsEmpty(canvas.isEmpty());
+  }, [width, initialData]);
 
   const handleClear = () => {
     canvasRef.current?.clear();
@@ -82,6 +91,7 @@ SignaturePad.propTypes = {
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
+  initialData: PropTypes.string,
 };
 
 export default SignaturePad;
